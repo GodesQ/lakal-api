@@ -7,8 +7,8 @@ const app = express();
 
 app.use(express.json());
 
-app.listen(3000, () => {
-    console.log(`Connected with Port ${3000}`);
+app.listen(5000, () => {
+    console.log(`Connected with Port ${5000}`);
 });
 
 app.use(authRouter);
