@@ -30,8 +30,17 @@ router.get("/api/posts/open-to-buy", async (request, response) => {
     response.send(result);
 });
 
-router.get('/api/posts/open-to-buy/users/:userId', async (request, response) => {
- 
+router.get("/api/posts/open-to-buy/users/:userId", currentUserMiddleware, async (request, response) => {
+    const userId = request.params.userId;
+
+    if(userId != request.user_id) {
+        response.status(400).json({ error: 'Invalid Request', message: 'Failed to get the user open to buy posts' });
+    }
+
+    const postsRef = collection(db, "Posts");
+    const q = query(postsRef, where("userId", "==", "open-to-buy"));
+
+
 });
 
 // Get all stock to sell posts
@@ -61,45 +70,37 @@ router.get("/api/posts/:postId", async (request, response) => {
         if (postSnap.exists()) {
             response.status(200).json({
                 id: postSnap.id,
-                data: postSnap.data()
+                data: postSnap.data(),
             });
         } else {
-            response.status(404).json({ message: 'No Record Found' });
+            response.status(404).json({ message: "No Record Found" });
         }
-
     } catch (error) {
         response.status(500).json({ error });
     }
-})
+});
 
-router.post(
-    "/api/posts",
-    currentUserMiddleware,
-    postMiddleware,
-    async (request, response) => {
-        try {
-            const postRef = collection(db, "Posts");
+router.post("/api/posts", currentUserMiddleware, postMiddleware, async (request, response) => {
+    try {
+        const postRef = collection(db, "Posts");
 
-            if (request.body.type == 'open-to-buy') {
-                let requestData = new OpenToBuyRequest(request.body, request.user_id);
-                await addDoc(postRef, { ...requestData });
-            }
-
-            if(request.body.type == 'stock-to-sell') {
-                let requestData = new StockToSellRequest(request.body, request.user_id);
-                await addDoc(postRef, { ...requestData });
-            }
-
-            return response.status(201).json({
-                message: "Post added successfully",
-            });
-
-        } catch (error) {
-            console.log(`Error Occured: ${error}`);
-            response.status(400).json({ error });
+        if (request.body.type == "open-to-buy") {
+            let requestData = new OpenToBuyRequest(request.body, request.user_id);
+            await addDoc(postRef, { ...requestData });
         }
-    }
-);
 
+        if (request.body.type == "stock-to-sell") {
+            let requestData = new StockToSellRequest(request.body, request.user_id);
+            await addDoc(postRef, { ...requestData });
+        }
+
+        return response.status(201).json({
+            message: "Post added successfully",
+        });
+    } catch (error) {
+        console.log(`Error Occured: ${error}`);
+        response.status(400).json({ error });
+    }
+});
 
 export default router;

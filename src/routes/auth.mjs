@@ -5,7 +5,7 @@ import { firebaseConfig } from "../../firebase/firebase-config.mjs";
 import { refreshToken } from "firebase-admin/app";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import UserAuthResponse from "../responses/UserAuthResponse.mjs";
-``
+
 const router = Router();
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -16,6 +16,7 @@ const db = getFirestore(firebaseApp);
 router.post("/api/login", async (request, response) => {
     try {
         const { email, password } = request.body;
+        console.log(request.body);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
         const docRef = doc(db, "UsersInfo", userCredential.user.uid);
